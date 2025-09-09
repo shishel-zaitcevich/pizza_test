@@ -1,0 +1,5 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, } from '@chakra-ui/react';
+export const BaseModal = ({ isOpen, onClose, title, footer, children }) => {
+    return (_jsxs(Modal, { isOpen: isOpen, onClose: onClose, isCentered: true, size: "xl", children: [_jsx(ModalOverlay, { bg: "blackAlpha.600", backdropFilter: "blur(10px)" }), _jsxs(ModalContent, { maxW: "720px", maxH: '80vh', w: "100%", h: "100%", overflowY: 'auto', display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", m: 'auto', mt: 30, position: 'relative', p: 20, borderRadius: 16, gap: 20, children: [_jsx(ModalHeader, { textAlign: "center", fontSize: 30, children: title }), _jsx(ModalCloseButton, { position: 'absolute', top: 20, right: 20, cursor: 'pointer', borderRadius: 6, p: 5 }), _jsx(ModalBody, { w: "100%", flex: "1", display: "flex", gap: 20, overflowY: "auto", children: children }), footer && (_jsx(ModalFooter, { w: "100%", display: "flex", justifyContent: "center", gap: 4, children: footer }))] })] }));
+};
