@@ -1,4 +1,5 @@
 import { Button } from '@chakra-ui/react';
+import cartImg from '../assets/Безымянный.png';
 
 type Props = {
   onClick: () => void;
@@ -16,7 +17,7 @@ export const CartButton = ({ onClick }: Props) => {
       onClick={onClick}
       cursor={'pointer'}
     >
-      <img src="/public/img/Безымянный.png" alt="cart" width={60} />
+      <img src={cartImg} alt="cart" width={60} />;
     </Button>
   );
 };
