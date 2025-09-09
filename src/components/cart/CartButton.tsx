@@ -16,7 +16,7 @@ export const CartButton = ({ onClick }: Props) => {
       onClick={onClick}
       cursor={'pointer'}
     >
-      <img src="/img/Безымянный.png" alt="cart" width={60} />
+      <img src="/public/img/Безымянный.png" alt="cart" width={60} />
     </Button>
   );
 };
