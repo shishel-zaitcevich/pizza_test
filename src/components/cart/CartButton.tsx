@@ -1,5 +1,5 @@
 import { Button } from '@chakra-ui/react';
-import cartImg from '../assets/Безымянный.png';
+import cartImg from '../../assets/Безымянный.png';
 
 type Props = {
   onClick: () => void;

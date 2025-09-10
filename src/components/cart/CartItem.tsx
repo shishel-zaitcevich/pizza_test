@@ -1,6 +1,9 @@
-import { Box, Text, Checkbox, Stack } from '@chakra-ui/react';
+import { Box, Text, Checkbox, Stack, HStack, Button } from '@chakra-ui/react';
+
 import { useState, useEffect } from 'react';
 import type { Ingredient } from '../../features/data/pizzasData';
+
+import trash from '../../assets/trash.png';
 
 type Props = {
   id: number;
@@ -8,9 +11,10 @@ type Props = {
   basePrice: number;
   ingredients: Ingredient[];
   onChange?: (id: number, selected: Ingredient[]) => void;
+  onRemove?: (id: number) => void;
 };
 
-export const CartItem = ({ id, name, basePrice, ingredients, onChange }: Props) => {
+export const CartItem = ({ id, name, basePrice, ingredients, onChange, onRemove }: Props) => {
   const [selected, setSelected] = useState<string[]>(() => ingredients.map((i) => i.name));
 
   useEffect(() => {
@@ -38,9 +42,24 @@ export const CartItem = ({ id, name, basePrice, ingredients, onChange }: Props) 
 
   return (
     <Box borderWidth="1px" borderRadius="md" p={4} mb={2}>
-      <Text fontWeight="bold" mb={3} fontSize="20">
-        {name}
-      </Text>
+      <HStack gap={20} mb={3}>
+        <Text fontWeight="bold" fontSize="20">
+          {name}
+        </Text>
+        {onRemove && (
+          <Button
+            onClick={() => {
+              console.log(`[CartItem] Удаление пиццы с id: ${id}`);
+              onRemove(id);
+            }}
+            cursor={'pointer'}
+            border={'none'}
+            bgColor={'transparent'}
+          >
+            <img aria-label="Удалить пиццу" src={`${trash}`} width={30} />
+          </Button>
+        )}
+      </HStack>
 
       <Text mb={3} color="gray.600">
         Базовая цена: {basePrice} руб.

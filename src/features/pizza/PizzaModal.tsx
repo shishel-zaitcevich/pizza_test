@@ -58,6 +58,7 @@ export const PizzaModal = ({ isOpen, onClose, pizza, onConfirm }: Props) => {
             w={160}
             h={42}
             borderRadius={10}
+            border={'none'}
             cursor={'pointer'}
           >
             Добавить в корзину

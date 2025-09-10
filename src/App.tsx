@@ -6,13 +6,14 @@ import type { CartPizza } from './features/cart/cartTypes';
 import { CartButton } from './components/cart/CartButton';
 import { PizzaList } from './features/pizza/PizzaList';
 import { CartModal } from './features/cart/CartModal';
+import { CartProvider } from './context/CartProvider';
+import { useCart } from './context/CartContext';
 
-function App() {
+function AppContent() {
   const pizzaModal = useDisclosure();
   const cartModal = useDisclosure();
-
   const [selectedPizza, setSelectedPizza] = useLocalStorage<Pizza | null>('selectedPizza', null);
-  const [cart, setCart] = useLocalStorage<CartPizza[]>('cart', []);
+  const { cart, setCart } = useCart();
 
   const handleAdd = (pizza: Pizza) => {
     setSelectedPizza(pizza);
@@ -25,13 +26,21 @@ function App() {
       id: Date.now(),
       name: selectedPizza.name,
       basePrice: selectedPizza.price,
-      ingredients: ingredients,
-      image: selectedPizza.image, // Include the image property
+      ingredients,
+      image:
+        selectedPizza.image ||
+        'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&fit=crop',
     };
-    setCart([...cart, cartItem]);
-  };
 
-  const clearCart = () => setCart([]);
+    setCart((prevCart) => {
+      console.log('[App] Текущая корзина перед добавлением:', prevCart);
+      const newCart = [...prevCart, cartItem];
+      console.log('[App] Новая корзина:', newCart);
+      return newCart;
+    });
+
+    pizzaModal.onClose();
+  };
 
   return (
     <Container maxW="1440px" py={6} m={'0 auto'}>
@@ -50,8 +59,16 @@ function App() {
 
       <CartButton onClick={cartModal.onOpen} />
 
-      <CartModal isOpen={cartModal.isOpen} onClose={cartModal.onClose} clearCart={clearCart} />
+      <CartModal isOpen={cartModal.isOpen} onClose={cartModal.onClose} />
     </Container>
+  );
+}
+
+function App() {
+  return (
+    <CartProvider>
+      <AppContent />
+    </CartProvider>
   );
 }
 

@@ -8,6 +8,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["react", "react-dom"]
+    "types": ["react", "react-dom"],
+    "noEmit": true
   }
 }

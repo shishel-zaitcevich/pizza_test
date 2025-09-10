@@ -9,35 +9,53 @@ import {
   Box,
   Button,
   Stack,
-  Input,
-  Text,
   useToast,
-  Flex,
-  Image,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { useCallback, useMemo, useState } from 'react';
 import { useSessionStorage } from '../../hooks/useSessionStorage';
-import { useLocalStorage } from '../../hooks/useLocalStorage';
 import type { CartPizza } from './cartTypes';
-import { CartItem } from '../../components/cart/CartItem';
+import { CartStep } from '../../components/cart/steps/CartStep';
+import { ConfirmationStep } from '../../components/cart/steps/ConfirmationStep';
+import { PersonalDataStep } from '../../components/cart/steps/PersonalDataStep';
+import { SuccessModal } from './SuccessModal';
+import { useCart } from '../../context/CartContext';
 
-type Props = { clearCart: () => void };
+type Props = {
+  clearCart: () => void;
+  onCloseCart?: () => void;
+};
 
-export const CartStepper = ({ clearCart }: Props) => {
+export const CartStepper = ({ clearCart, onCloseCart }: Props) => {
   const steps = ['Заказ', 'Данные', 'Подтверждение'];
-  const [cart, setCart] = useLocalStorage<CartPizza[]>('cart', []);
+  const { cart, setCart } = useCart();
   const [step, setStep] = useSessionStorage('step', 0);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [comment, setComment] = useState('');
   const toast = useToast();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleIngredientsChange = useCallback(
     (id: number, ingredients: CartPizza['ingredients']) => {
+      console.log(`[CartStepper] Обновление ингредиентов для пиццы ${id}:`, ingredients);
       setCart((prevCart) => prevCart.map((p) => (p.id === id ? { ...p, ingredients } : p)));
     },
     [setCart],
+  );
+
+  const handleRemovePizza = useCallback(
+    (id: number) => {
+      console.log(`[CartStepper] Удаление пиццы ${id}`);
+      setCart((prevCart) => {
+        const newCart = prevCart.filter((p) => p.id !== id);
+        console.log(`[CartStepper] Новая корзина после удаления:`, newCart);
+        return newCart;
+      });
+      toast({ title: 'Пицца удалена из корзины', status: 'info', duration: 2000 });
+    },
+    [setCart, toast],
   );
 
   const total = useMemo(
@@ -59,14 +77,40 @@ export const CartStepper = ({ clearCart }: Props) => {
     return res;
   };
 
-  const handleConfirm = () => {
-    toast({ title: 'Заказ оформлен!', status: 'success', duration: 3000 });
-    clearCart();
-    setStep(0);
+  const isFormValid = () => {
+    return name.trim() !== '' && phone.length >= 18 && address.trim() !== '';
   };
 
-  const defaultPizzaImage =
-    'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&fit=crop';
+  const handleNextStep = () => {
+    if (step === 1 && !isFormValid()) {
+      toast({
+        title: 'Ошибка',
+        description: 'Пожалуйста, заполните все обязательные поля',
+        status: 'error',
+        duration: 3000,
+      });
+      return;
+    }
+    setStep(step + 1);
+  };
+
+  const handleConfirm = () => {
+    onOpen();
+  };
+
+  const handleModalClose = () => {
+    onClose();
+    clearCart();
+    setStep(0);
+    setName('');
+    setPhone('');
+    setAddress('');
+    setComment('');
+    if (onCloseCart) {
+      onCloseCart();
+    }
+    toast({ title: 'Заказ оформлен!', status: 'success', duration: 3000 });
+  };
 
   return (
     <Box
@@ -134,104 +178,64 @@ export const CartStepper = ({ clearCart }: Props) => {
         ))}
       </Stepper>
 
-      <Box mt={4}>
+      <Box mt={4} overflowY="auto">
         {step === 0 && (
-          <Box>
-            {cart.map((p) => (
-              <Flex
-                key={p.id}
-                direction="row"
-                gap={2}
-                justifyContent={'center'}
-                alignItems="center"
-                mb={4}
-                borderBottom={'1px solid #fff'}
-              >
-                <Box flex="1">
-                  <CartItem
-                    id={p.id}
-                    name={p.name}
-                    basePrice={p.basePrice}
-                    ingredients={p.ingredients}
-                    onChange={handleIngredientsChange}
-                  />
-                </Box>
-                <Image
-                  src={p.image || defaultPizzaImage}
-                  alt={p.name}
-                  maxW="200px"
-                  maxH="150px"
-                  borderRadius="16"
-                  objectFit="cover"
-                  fallback={<Text fontSize="sm">Изображение недоступно</Text>}
-                  mr={20}
-                />
-              </Flex>
-            ))}
-            <Text fontWeight="bold" mt={3}>
-              Общая сумма: {total} руб.
-            </Text>
-          </Box>
+          <CartStep
+            cart={cart}
+            total={total}
+            onIngredientsChange={handleIngredientsChange}
+            onRemovePizza={handleRemovePizza}
+          />
         )}
         {step === 1 && (
-          <Stack gap={3}>
-            <Input placeholder="Имя" value={name} onChange={(e) => setName(e.target.value)} />
-            <Input
-              placeholder="Телефон"
-              value={phone}
-              onChange={(e) => setPhone(formatPhone(e.target.value))}
-            />
-            <Input
-              placeholder="Адрес доставки"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-            <Input
-              placeholder="Комментарий (опционально)"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-            />
-            <Text fontWeight="bold">Общая сумма: {total} руб.</Text>
-          </Stack>
+          <PersonalDataStep
+            name={name}
+            setName={setName}
+            phone={phone}
+            setPhone={setPhone}
+            address={address}
+            setAddress={setAddress}
+            comment={comment}
+            setComment={setComment}
+            total={total}
+            formatPhone={formatPhone}
+          />
         )}
         {step === 2 && (
-          <Box>
-            <Text fontWeight="bold">Ваш заказ:</Text>
-            {cart.map((p) => (
-              <CartItem
-                key={p.id}
-                id={p.id}
-                name={p.name}
-                basePrice={p.basePrice}
-                ingredients={p.ingredients}
-                onChange={handleIngredientsChange}
-              />
-            ))}
-            <Text mt={2}>Имя: {name}</Text>
-            <Text>Телефон: {phone}</Text>
-            <Text>Адрес: {address}</Text>
-            {comment && <Text>Комментарий: {comment}</Text>}
-            <Text fontWeight="bold" mt={3}>
-              Итог: {total} руб.
-            </Text>
-          </Box>
+          <ConfirmationStep
+            cart={cart}
+            name={name}
+            phone={phone}
+            address={address}
+            comment={comment}
+            total={total}
+            onIngredientsChange={handleIngredientsChange}
+            onRemovePizza={handleRemovePizza}
+          />
         )}
       </Box>
 
       <Stack direction="row" mt={4} gap={3}>
         {step > 0 && (
-          <Button onClick={() => setStep(step - 1)} w={120} h={42} borderRadius={10}>
+          <Button
+            onClick={() => setStep(step - 1)}
+            w={120}
+            h={42}
+            borderRadius={10}
+            border={'none'}
+          >
             Назад
           </Button>
         )}
         {step < steps.length - 1 && (
           <Button
             colorScheme="teal"
-            onClick={() => setStep(step + 1)}
+            onClick={handleNextStep}
             isDisabled={cart.length === 0}
             w={120}
             h={42}
             borderRadius={10}
+            border={'none'}
           >
             Далее
           </Button>
@@ -244,11 +248,14 @@ export const CartStepper = ({ clearCart }: Props) => {
             w={120}
             h={42}
             borderRadius={10}
+            border={'none'}
           >
             Подтвердить
           </Button>
         )}
       </Stack>
+
+      <SuccessModal isOpen={isOpen} onClose={handleModalClose} />
     </Box>
   );
 };

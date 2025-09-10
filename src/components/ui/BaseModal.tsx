@@ -47,6 +47,7 @@ export const BaseModal = ({ isOpen, onClose, title, footer, children }: Props) =
           right={20}
           cursor={'pointer'}
           borderRadius={6}
+          border={'none'}
           p={5}
         />
         <ModalBody w="100%" flex="1" display="flex" gap={20} overflowY="auto">

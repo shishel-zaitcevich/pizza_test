@@ -1,6 +1,8 @@
 import { Card, Image, Text, Button, Stack, Box } from '@chakra-ui/react';
 import type { Pizza } from '../../features/data/pizzasData';
 
+import cardImg from '../../assets/1.png';
+
 type Props = {
   pizza: Pizza;
   onAdd: (pizza: Pizza) => void;
@@ -25,7 +27,7 @@ export const PizzaCard = ({ pizza, onAdd }: Props) => {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundImage: 'url(/img/1.png)',
+        backgroundImage: `url(${cardImg})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         opacity: 0.5,
@@ -64,6 +66,7 @@ export const PizzaCard = ({ pizza, onAdd }: Props) => {
               h={42}
               maxW={160}
               borderRadius={10}
+              border={'none'}
               cursor={'pointer'}
             >
               Добавить в корзину
